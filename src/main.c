@@ -48,7 +48,8 @@ int main(int argc,char **argv)
 	fprintf(stderr,"  -interp     -> particle interpolation scheme: NGP, CIC or TSC\n");
 	fprintf(stderr,"  -do         -> concatenate tasks: velocity (v), tidal field (t), linearized velocity (l)\n");
 	fprintf(stderr,"  -diag_tidal -> diagonalize tidal tensor\n");
-	fprintf(stderr,"  -h          -> help\n\n");
+	fprintf(stderr,"  -h          -> this help\n\n");
+	return 0;
       }
     }
     else {
