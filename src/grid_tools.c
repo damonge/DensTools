@@ -749,13 +749,19 @@ void get_tidal_field(void)
   }
 }
 
-void get_linearized_velocity(void)
+void get_linearized_velocity(gad_header head)
 {
   //TODO correct normalization
 
   int iy;
   fftwf_plan plan_v_tor[3];
   float dk=2*M_PI/Lbox;
+
+  double a=head.time;
+  double hub=sqrt(head.Omega0/(a*a*a)+head.OmegaLambda+(1-head.Omega0-head.OmegaLambda)/(a*a));
+  double omega_m=head.Omega0/(head.Omega0+head.OmegaLambda*a*a*a+
+			      (1-head.Omega0-head.OmegaLambda)*a);
+  float prefac_vel=100*pow(omega_m,0.55)*hub;
 
 #ifdef _DEBUG
   printf("Node %d Planning\n",NodeThis);
@@ -783,9 +789,9 @@ void get_linearized_velocity(void)
 	if(kmod2>0)
 	  i_kmod2=1./(dk*kmod2);
 
-	Clvel_local[0][index]=I*Cdens_sm_local[index]*ix0*i_kmod2; //vx
-	Clvel_local[1][index]=I*Cdens_sm_local[index]*iy0*i_kmod2; //vy
-	Clvel_local[2][index]=I*Cdens_sm_local[index]*iz *i_kmod2; //vz
+	Clvel_local[0][index]=I*prefac_vel*Cdens_sm_local[index]*ix0*i_kmod2; //vx
+	Clvel_local[1][index]=I*prefac_vel*Cdens_sm_local[index]*iy0*i_kmod2; //vy
+	Clvel_local[2][index]=I*prefac_vel*Cdens_sm_local[index]*iz *i_kmod2; //vz
       }
     }
   }

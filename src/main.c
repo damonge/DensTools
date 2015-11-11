@@ -144,7 +144,7 @@ int main(int argc,char **argv)
   if(TaskLinvel) {
     if(NodeThis==0)
       printf("* Getting linearized velocity\n");
-    get_linearized_velocity();
+    get_linearized_velocity(head);
     if(NodeThis==0)
       printf("\n");
   }

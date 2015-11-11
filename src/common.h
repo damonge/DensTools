@@ -110,6 +110,6 @@ void compute_velocity_and_overdensity(ulint np,ulint np_total,float *pos,float *
 void smooth_density_fourier(float r_smooth);
 void get_smoothed_density_real(void);
 void get_tidal_field(void);
-void get_linearized_velocity(void);
+void get_linearized_velocity(gad_header head);
 
 #endif //_COMMON_H_
