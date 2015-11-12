@@ -88,7 +88,7 @@ void domain_decomp(void)
     Dens_sm_local=fftwf_alloc_real(2*dsize);
     if(Dens_sm_local==NULL)
       report_error(1,"Couldn't allocate density field\n");
-    Cdens_sm_local=(fftwf_complex *)Dens_local;
+    Cdens_sm_local=(fftwf_complex *)Dens_sm_local;
   }
   if(TaskTidal) {
     Tid_local=my_malloc(6*sizeof(float *));

@@ -768,7 +768,7 @@ void get_linearized_velocity(gad_header head)
 #endif //_DEBUG
   for(iy=0;iy<3;iy++) {
     plan_v_tor[iy]=fftwf_mpi_plan_dft_c2r_3d(Ngrid,Ngrid,Ngrid,Clvel_local[iy],Lvel_local[iy],
-					    MPI_COMM_WORLD,FFTW_ESTIMATE | FFTW_MPI_TRANSPOSED_IN);
+					     MPI_COMM_WORLD,FFTW_ESTIMATE | FFTW_MPI_TRANSPOSED_IN);
   }
 
 #ifdef _DEBUG
