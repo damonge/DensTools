@@ -32,18 +32,26 @@ dens=read_grid("output_dens",2)
 dens_sm=read_grid("output_dens_sm",2)
 vel=read_grid("output_vel",2)
 lvel=read_grid("output_linvel",2)
+tid=read_grid("output_tidal",2)
 ng=len(dens)
 i_slice=ng/2
 
 fig,ax=plt.subplots()
 cax=ax.imshow(dens[i_slice,:,:],interpolation='none',origin='lower')
 cbar=fig.colorbar(cax)
+
 fig,ax=plt.subplots()
 cax=ax.imshow(dens_sm[i_slice,:,:],interpolation='none',origin='lower')
 cbar=fig.colorbar(cax)
+
+fig,ax=plt.subplots()
+cax=ax.imshow(tid[i_slice,:,:,0]+tid[i_slice,:,:,1]+tid[i_slice,:,:,2],interpolation='none',origin='lower')
+cbar=fig.colorbar(cax)
+
 fig,ax=plt.subplots()
 cax=ax.imshow(np.sqrt(vel[i_slice,:,:,0]**2+vel[i_slice,:,:,1]**2+vel[i_slice,:,:,2]**2),interpolation='none',origin='lower')
 cbar=fig.colorbar(cax)
+
 fig,ax=plt.subplots()
 cax=ax.imshow(np.sqrt(lvel[i_slice,:,:,0]**2+lvel[i_slice,:,:,1]**2+lvel[i_slice,:,:,2]**2),interpolation='none',origin='lower')
 cbar=fig.colorbar(cax)
