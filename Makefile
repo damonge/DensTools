@@ -1,6 +1,5 @@
 ########## User-definable stuff ##########
 #
-
 ###Compiler and compilation options
 COMP = mpicc
 OPTIONS = -Wall -O3
