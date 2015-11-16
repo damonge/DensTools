@@ -7,7 +7,7 @@ static void pos_2_ngp_serial(ulint np,float *pos,float *delta)
   memset(delta,0,sizeof(float)*Nx_here*((lint)(Ngrid*Ngrid)));
   
   lint ii;
-  float i_agrid=1.0f/Ngrid;
+  float i_agrid=Ngrid/Lbox;
 
   for(ii=0;ii<np;ii++) {
     lint index;
@@ -28,7 +28,7 @@ static void pos_2_ngp_serial(ulint np,float *pos,float *delta)
 static void pos_2_ngp_parallel(ulint np,float *pos,float *delta)
 {
   lint ii;
-  float i_agrid=1.0f/Ngrid;
+  float i_agrid=Ngrid/Lbox;
 
   if(NodeThis==0)
     printf("  Calculating NGP\n");
@@ -318,7 +318,7 @@ static void vel_2_ngp_serial(ulint np,float *pos,float *vel,float *densgrid,floa
   memset(velgrid[2],0,sizeof(float)*Nx_here*((lint)(Ngrid*Ngrid)));
   
   lint ii;
-  float i_agrid=1.0f/Ngrid;
+  float i_agrid=Ngrid/Lbox;
 
   for(ii=0;ii<np;ii++) {
     int ax,i0[3];
@@ -338,7 +338,7 @@ static void vel_2_ngp_serial(ulint np,float *pos,float *vel,float *densgrid,floa
 static void vel_2_ngp_parallel(ulint np,float *pos,float *vel,float *densgrid,float **velgrid)
 {
   lint ii;
-  float i_agrid=1.0f/Ngrid;
+  float i_agrid=Ngrid/Lbox;
 
   if(NodeThis==0)
     printf("  Calculating NGP\n");
