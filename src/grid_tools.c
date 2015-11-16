@@ -21,7 +21,7 @@ static void pos_2_ngp_serial(ulint np,float *pos,float *delta)
     }
 
     index=i0[2]+2*(Ngrid/2+1)*((lint)(i0[1]+Ngrid*i0[0]));
-    delta[index]++;
+    delta[index]+=1.;
   }
 }
 
@@ -41,10 +41,11 @@ static void pos_2_ngp_parallel(ulint np,float *pos,float *delta)
 
     for(ax=0;ax<3;ax++)
       i0[ax]=(int)(p[ax]*i_agrid+0.5);
-    if(i0[1]>=Ngrid) i0[1]-=Ngrid;
-    if(i0[1]<0) i0[1]+=Ngrid;
-    if(i0[2]>=Ngrid) i0[2]-=Ngrid;
-    if(i0[2]<0) i0[2]+=Ngrid;
+    for(ax=1;ax<3;ax++) {
+      if(i0[ax]>=Ngrid) i0[ax]-=Ngrid;
+      if(i0[ax]<0) i0[ax]+=Ngrid;
+    }
+    i0[0]-=Ix0_here;
 
     if(i0[0]>=0 && i0[0]<Nx_here) {
       index=i0[2]+2*(Ngrid/2+1)*((lint)(i0[1]+Ngrid*i0[0]));
@@ -354,10 +355,11 @@ static void vel_2_ngp_parallel(ulint np,float *pos,float *vel,float *densgrid,fl
 
     for(ax=0;ax<3;ax++)
       i0[ax]=(int)(p[ax]*i_agrid+0.5f);
-    if(i0[1]>=Ngrid) i0[1]-=Ngrid;
-    if(i0[1]<0) i0[1]+=Ngrid;
-    if(i0[2]>=Ngrid) i0[2]-=Ngrid;
-    if(i0[2]<0) i0[2]+=Ngrid;
+    for(ax=1;ax<3;ax++) {
+      if(i0[ax]>=Ngrid) i0[ax]-=Ngrid;
+      if(i0[ax]<0) i0[ax]+=Ngrid;
+    }
+    i0[0]-=Ix0_here;
 
     if(i0[0]>=0 && i0[0]<Nx_here) {
       add_weight(i0[0],i0[1],i0[2],1.0f,densgrid,velgrid,v);
