@@ -3,6 +3,9 @@ import sys as sys
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
+prefix_input=sys.argv[1]
+nfiles_input=int(sys.argv[2])
+
 def read_grid(prefix,nfiles) :
     f=open(prefix+".0000","rb")
     num_grids,ngrid=np.fromfile(f,dtype=np.int32,count=2)
@@ -28,11 +31,11 @@ def read_grid(prefix,nfiles) :
 
     return grid_out
 
-dens=read_grid("output_dens",2)
-dens_sm=read_grid("output_dens_sm",2)
-vel=read_grid("output_vel",2)
-lvel=read_grid("output_linvel",2)
-tid=read_grid("output_tidal",2)
+dens=read_grid(prefix_input+"_dens",nfiles_input)
+dens_sm=read_grid(prefix_input+"_dens_sm",nfiles_input)
+vel=read_grid(prefix_input+"_vel",nfiles_input)
+lvel=read_grid(prefix_input+"_linvel",nfiles_input)
+tid=read_grid(prefix_input+"_tidal",nfiles_input)
 ng=len(dens)
 i_slice=ng/2
 
@@ -53,6 +56,7 @@ cax=ax.imshow(np.sqrt(vel[i_slice,:,:,0]**2+vel[i_slice,:,:,1]**2+vel[i_slice,:,
 cbar=fig.colorbar(cax)
 
 fig,ax=plt.subplots()
-cax=ax.imshow(np.sqrt(lvel[i_slice,:,:,0]**2+lvel[i_slice,:,:,1]**2+lvel[i_slice,:,:,2]**2),interpolation='none',origin='lower')
+cax=ax.imshow(np.sqrt(lvel[i_slice,:,:,0]**2+lvel[i_slice,:,:,1]**2+lvel[i_slice,:,:,2]**2)/
+              np.sqrt(vel[i_slice,:,:,0]**2+vel[i_slice,:,:,1]**2+vel[i_slice,:,:,2]**2)-1,vmin=-1,vmax=1,interpolation='none',origin='lower')
 cbar=fig.colorbar(cax)
 plt.show()

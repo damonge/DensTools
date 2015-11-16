@@ -3,6 +3,8 @@
 int NNodes;
 int NodeThis;
 
+int UseFD=0;
+
 int Ngrid=128;
 int Nx_here,Ix0_here,Ny_here,Iy0_here;
 float Lbox=128.;

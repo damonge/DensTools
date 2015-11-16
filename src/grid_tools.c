@@ -7,7 +7,7 @@ static void pos_2_ngp_serial(ulint np,float *pos,float *delta)
   memset(delta,0,sizeof(float)*Nx_here*((lint)(Ngrid*Ngrid)));
   
   lint ii;
-  float i_agrid=1./Ngrid;
+  float i_agrid=1.0f/Ngrid;
 
   for(ii=0;ii<np;ii++) {
     lint index;
@@ -28,7 +28,7 @@ static void pos_2_ngp_serial(ulint np,float *pos,float *delta)
 static void pos_2_ngp_parallel(ulint np,float *pos,float *delta)
 {
   lint ii;
-  float i_agrid=1./Ngrid;
+  float i_agrid=1.0f/Ngrid;
 
   if(NodeThis==0)
     printf("  Calculating NGP\n");
@@ -145,11 +145,11 @@ static void pos_2_tsc_serial(ulint np,float *pos,float *delta)
     float *p=&(pos[3*ii]);
     
     for(ax=0;ax<3;ax++) {
-      i0[ax]=(int)(p[ax]*i_agrid+0.5);
+      i0[ax]=(int)(p[ax]*i_agrid+0.5f);
       a0[ax]=p[ax]*i_agrid-i0[ax];
-      am[ax]=0.5*(0.5-a0[ax])*(0.5-a0[ax]);
-      ap[ax]=0.5*(0.5+a0[ax])*(0.5+a0[ax]);
-      a0[ax]=0.75-a0[ax]*a0[ax];
+      am[ax]=0.5f*(0.5f-a0[ax])*(0.5f-a0[ax]);
+      ap[ax]=0.5f*(0.5f+a0[ax])*(0.5f+a0[ax]);
+      a0[ax]=0.75f-a0[ax]*a0[ax];
       ip[ax]=i0[ax]+1;
       im[ax]=i0[ax]-1;
       if(im[ax]<0) im[ax]+=Ngrid;
@@ -204,11 +204,11 @@ static void pos_2_tsc_parallel(ulint np,float *pos,float *delta)
     float *p=&(pos[3*ii]);
     
     for(ax=0;ax<3;ax++) {
-      i0[ax]=(int)(floorf(p[ax]*i_agrid+0.5));
+      i0[ax]=(int)(floorf(p[ax]*i_agrid+0.5f));
       a0[ax]=p[ax]*i_agrid-i0[ax];
-      am[ax]=0.5*(0.5-a0[ax])*(0.5-a0[ax]);
-      ap[ax]=0.5*(0.5+a0[ax])*(0.5+a0[ax]);
-      a0[ax]=0.75-a0[ax]*a0[ax];
+      am[ax]=0.5f*(0.5f-a0[ax])*(0.5f-a0[ax]);
+      ap[ax]=0.5f*(0.5f+a0[ax])*(0.5f+a0[ax]);
+      a0[ax]=0.75f-a0[ax]*a0[ax];
       ip[ax]=i0[ax]+1;
       im[ax]=i0[ax]-1;
     }
@@ -318,7 +318,7 @@ static void vel_2_ngp_serial(ulint np,float *pos,float *vel,float *densgrid,floa
   memset(velgrid[2],0,sizeof(float)*Nx_here*((lint)(Ngrid*Ngrid)));
   
   lint ii;
-  float i_agrid=1./Ngrid;
+  float i_agrid=1.0f/Ngrid;
 
   for(ii=0;ii<np;ii++) {
     int ax,i0[3];
@@ -326,19 +326,19 @@ static void vel_2_ngp_serial(ulint np,float *pos,float *vel,float *densgrid,floa
     float *v=&(vel[3*ii]);
 
     for(ax=0;ax<3;ax++) {
-      i0[ax]=(int)(p[ax]*i_agrid+0.5);
+      i0[ax]=(int)(p[ax]*i_agrid+0.5f);
       if(i0[ax]>=Ngrid) i0[ax]-=Ngrid;
       else if(i0[ax]<0) i0[ax]+=Ngrid;
     }
 
-    add_weight(i0[0],i0[1],i0[2],1.,densgrid,velgrid,v);
+    add_weight(i0[0],i0[1],i0[2],1.0f,densgrid,velgrid,v);
   }
 }
 
 static void vel_2_ngp_parallel(ulint np,float *pos,float *vel,float *densgrid,float **velgrid)
 {
   lint ii;
-  float i_agrid=1./Ngrid;
+  float i_agrid=1.0f/Ngrid;
 
   if(NodeThis==0)
     printf("  Calculating NGP\n");
@@ -353,14 +353,14 @@ static void vel_2_ngp_parallel(ulint np,float *pos,float *vel,float *densgrid,fl
     float *v=&(vel[3*ii]);
 
     for(ax=0;ax<3;ax++)
-      i0[ax]=(int)(p[ax]*i_agrid+0.5);
+      i0[ax]=(int)(p[ax]*i_agrid+0.5f);
     if(i0[1]>=Ngrid) i0[1]-=Ngrid;
     if(i0[1]<0) i0[1]+=Ngrid;
     if(i0[2]>=Ngrid) i0[2]-=Ngrid;
     if(i0[2]<0) i0[2]+=Ngrid;
 
     if(i0[0]>=0 && i0[0]<Nx_here) {
-      add_weight(i0[0],i0[1],i0[2],1.,densgrid,velgrid,v);
+      add_weight(i0[0],i0[1],i0[2],1.0f,densgrid,velgrid,v);
     }
   }
 }
@@ -469,11 +469,11 @@ static void vel_2_tsc_serial(ulint np,float *pos,float *vel,float *densgrid,floa
     float *v=&(vel[3*ii]);
     
     for(ax=0;ax<3;ax++) {
-      i0[ax]=(int)(p[ax]*i_agrid+0.5);
+      i0[ax]=(int)(p[ax]*i_agrid+0.5f);
       a0[ax]=p[ax]*i_agrid-i0[ax];
-      am[ax]=0.5*(0.5-a0[ax])*(0.5-a0[ax]);
-      ap[ax]=0.5*(0.5+a0[ax])*(0.5+a0[ax]);
-      a0[ax]=0.75-a0[ax]*a0[ax];
+      am[ax]=0.5f*(0.5f-a0[ax])*(0.5f-a0[ax]);
+      ap[ax]=0.5f*(0.5f+a0[ax])*(0.5f+a0[ax]);
+      a0[ax]=0.75f-a0[ax]*a0[ax];
       ip[ax]=i0[ax]+1;
       im[ax]=i0[ax]-1;
       if(im[ax]<0) im[ax]+=Ngrid;
@@ -532,11 +532,11 @@ static void vel_2_tsc_parallel(ulint np,float *pos,float *vel,float *densgrid,fl
     float *v=&(vel[3*ii]);
     
     for(ax=0;ax<3;ax++) {
-      i0[ax]=(int)(floorf(p[ax]*i_agrid+0.5));
+      i0[ax]=(int)(floorf(p[ax]*i_agrid+0.5f));
       a0[ax]=p[ax]*i_agrid-i0[ax];
-      am[ax]=0.5*(0.5-a0[ax])*(0.5-a0[ax]);
-      ap[ax]=0.5*(0.5+a0[ax])*(0.5+a0[ax]);
-      a0[ax]=0.75-a0[ax]*a0[ax];
+      am[ax]=0.5f*(0.5f-a0[ax])*(0.5f-a0[ax]);
+      ap[ax]=0.5f*(0.5f+a0[ax])*(0.5f+a0[ax]);
+      a0[ax]=0.75f-a0[ax]*a0[ax];
       ip[ax]=i0[ax]+1;
       im[ax]=i0[ax]-1;
     }
@@ -699,7 +699,67 @@ void get_smoothed_density_real(void)
   fftwf_destroy_plan(plan_tor);
 }
 
-void get_tidal_field(void)
+static void get_tidal_field_fd(void)
+{
+  int iy;
+  fftwf_plan plan_t_tor[6];
+  fcomplex w=(fcomplex)(cexp(I*2*M_PI/Ngrid));
+
+#ifdef _DEBUG
+  printf("Node %d Planning\n",NodeThis);
+#endif //_DEBUG
+  for(iy=0;iy<6;iy++) {
+    plan_t_tor[iy]=fftwf_mpi_plan_dft_c2r_3d(Ngrid,Ngrid,Ngrid,Ctid_local[iy],Tid_local[iy],
+					     MPI_COMM_WORLD,FFTW_ESTIMATE | FFTW_MPI_TRANSPOSED_IN);
+  }
+
+#ifdef _DEBUG
+  printf("Node %d computing tidal field\n",NodeThis);
+#endif //_DEBUG
+  for(iy=0;iy<Ny_here;iy++) {
+    int ix;
+    int iy_true=iy+Iy0_here;
+    fcomplex wy=(fcomplex)(cexp(I*2*M_PI*iy_true/Ngrid));
+    fcomplex wx=1.0f;
+    for(ix=0;ix<Ngrid;ix++) {
+      int iz;
+      fcomplex wz=1.0f;
+      for(iz=0;iz<Ngrid/2+1;iz++) {
+	long index=iz+(Ngrid/2+1)*((long)(ix+Ngrid*iy));
+	if(index==0) {
+	  Ctid_local[0][index]=0;
+	  Ctid_local[1][index]=0;
+	  Ctid_local[2][index]=0;
+	  Ctid_local[3][index]=0;
+	  Ctid_local[4][index]=0;
+	  Ctid_local[5][index]=0;
+	}
+	else {
+	  fcomplex i_kmod2=1.0f/(wx+1.0f/wx+wy+1.0f/wy+wz+1.0f/wz-6);
+	  Ctid_local[0][index]=Cdens_sm_local[index]*(wx+1.0f/wx-2)*i_kmod2; //xx
+	  Ctid_local[1][index]=Cdens_sm_local[index]*(wy+1.0f/wy-2)*i_kmod2; //yy
+	  Ctid_local[2][index]=Cdens_sm_local[index]*(wz+1.0f/wz-2)*i_kmod2; //zz
+	  Ctid_local[3][index]=Cdens_sm_local[index]*0.25f*(1.0f/(wx*wy)+wx*wy-wx/wy-wy/wx)*i_kmod2; //xy
+	  Ctid_local[4][index]=Cdens_sm_local[index]*0.25f*(1.0f/(wy*wz)+wy*wz-wy/wz-wz/wy)*i_kmod2; //yz
+	  Ctid_local[5][index]=Cdens_sm_local[index]*0.25f*(1.0f/(wz*wx)+wz*wx-wz/wx-wx/wz)*i_kmod2; //zx
+	}
+
+	wz*=w;
+      }
+      wx*=w;
+    }
+  }
+
+#ifdef _DEBUG
+  printf("Node %d Transforming back\n",NodeThis);
+#endif //_DEBUG
+  for(iy=0;iy<6;iy++) {
+    fftwf_execute(plan_t_tor[iy]);
+    fftwf_destroy_plan(plan_t_tor[iy]);
+  }
+}
+
+static void get_tidal_field_ks(void)
 {
   int iy;
   fftwf_plan plan_t_tor[6];
@@ -728,7 +788,7 @@ void get_tidal_field(void)
 	long index=iz+(Ngrid/2+1)*((long)(ix+Ngrid*iy));
 
 	if(kmod2>0)
-	  i_kmod2=1./kmod2;
+	  i_kmod2=1.0f/kmod2;
 
 	Ctid_local[0][index]=Cdens_sm_local[index]*ix0*ix0*i_kmod2; //xx
 	Ctid_local[1][index]=Cdens_sm_local[index]*iy0*iy0*i_kmod2; //yy
@@ -749,19 +809,85 @@ void get_tidal_field(void)
   }
 }
 
-void get_linearized_velocity(gad_header head)
+void get_tidal_field(void)
 {
-  //TODO correct normalization
+  if(UseFD)
+    get_tidal_field_fd();
+  else
+    get_tidal_field_ks();
+}
 
+static void get_linearized_velocity_fd(gad_header head)
+{
   int iy;
   fftwf_plan plan_v_tor[3];
-  float dk=2*M_PI/Lbox;
+  float agrid=Lbox/Ngrid;
+  fcomplex w=(fcomplex)(cexp(I*2*M_PI/Ngrid));
 
   double a=head.time;
   double hub=sqrt(head.Omega0/(a*a*a)+head.OmegaLambda+(1-head.Omega0-head.OmegaLambda)/(a*a));
   double omega_m=head.Omega0/(head.Omega0+head.OmegaLambda*a*a*a+
 			      (1-head.Omega0-head.OmegaLambda)*a);
-  float prefac_vel=100*pow(omega_m,0.55)*hub;
+  float prefac_vel=(float)(100*pow(omega_m,0.55)*hub);
+
+#ifdef _DEBUG
+  printf("Node %d Planning\n",NodeThis);
+#endif //_DEBUG
+  for(iy=0;iy<3;iy++) {
+    plan_v_tor[iy]=fftwf_mpi_plan_dft_c2r_3d(Ngrid,Ngrid,Ngrid,Clvel_local[iy],Lvel_local[iy],
+					     MPI_COMM_WORLD,FFTW_ESTIMATE | FFTW_MPI_TRANSPOSED_IN);
+  }
+
+#ifdef _DEBUG
+  printf("Node %d computing linearized velocity\n",NodeThis);
+#endif //_DEBUG
+  for(iy=0;iy<Ny_here;iy++) {
+    int ix;
+    int iy_true=iy+Iy0_here;
+    fcomplex wy=(fcomplex)(cexp(I*2*M_PI*iy_true/Ngrid));
+    fcomplex wx=1.0f;
+    for(ix=0;ix<Ngrid;ix++) {
+      int iz;
+      fcomplex wz=1.0f;
+      for(iz=0;iz<Ngrid/2+1;iz++) {
+	long index=iz+(Ngrid/2+1)*((long)(ix+Ngrid*iy));
+	if(index==0) {
+	  Clvel_local[0][index]=0;
+	  Clvel_local[1][index]=0;
+	  Clvel_local[2][index]=0;
+	}
+	else {
+	  fcomplex i_kmod2=1.0f/(wx+1.0f/wx+wy+1.0f/wy+wz+1.0f/wz-6);
+	  Clvel_local[0][index]=prefac_vel*Cdens_sm_local[index]*agrid*0.5f*(1.0f/wx-wx)*i_kmod2;
+	  Clvel_local[1][index]=prefac_vel*Cdens_sm_local[index]*agrid*0.5f*(1.0f/wy-wy)*i_kmod2;
+	  Clvel_local[2][index]=prefac_vel*Cdens_sm_local[index]*agrid*0.5f*(1.0f/wz-wz)*i_kmod2;
+	}
+	wz*=w;
+      }
+      wx*=w;
+    }
+  }
+
+#ifdef _DEBUG
+  printf("Node %d Transforming back\n",NodeThis);
+#endif //_DEBUG
+  for(iy=0;iy<3;iy++) {
+    fftwf_execute(plan_v_tor[iy]);
+    fftwf_destroy_plan(plan_v_tor[iy]);
+  }
+}
+
+static void get_linearized_velocity_ks(gad_header head)
+{
+  int iy;
+  fftwf_plan plan_v_tor[3];
+  float dk=(float)(2*M_PI/Lbox);
+
+  double a=head.time;
+  double hub=sqrt(head.Omega0/(a*a*a)+head.OmegaLambda+(1-head.Omega0-head.OmegaLambda)/(a*a));
+  double omega_m=head.Omega0/(head.Omega0+head.OmegaLambda*a*a*a+
+			      (1-head.Omega0-head.OmegaLambda)*a);
+  float prefac_vel=(float)(100*pow(omega_m,0.55)*hub);
 
 #ifdef _DEBUG
   printf("Node %d Planning\n",NodeThis);
@@ -787,7 +913,7 @@ void get_linearized_velocity(gad_header head)
 	long index=iz+(Ngrid/2+1)*((long)(ix+Ngrid*iy));
 
 	if(kmod2>0)
-	  i_kmod2=1./(dk*kmod2);
+	  i_kmod2=(float)(1.0f/(dk*kmod2));
 
 	Clvel_local[0][index]=I*prefac_vel*Cdens_sm_local[index]*ix0*i_kmod2; //vx
 	Clvel_local[1][index]=I*prefac_vel*Cdens_sm_local[index]*iy0*i_kmod2; //vy
@@ -805,128 +931,10 @@ void get_linearized_velocity(gad_header head)
   }
 }
 
-
-/*
-typedef struct {
-  double eval;
-  double evec[3];
-} Esys;
-
-int compare_evals(const void *p1,const void *p2)
+void get_linearized_velocity(gad_header head)
 {
-  Esys *e1=(Esys *)p1;
-  Esys *e2=(Esys *)p2;
-
-  return (e1->eval>e2->eval) - (e1->eval<e2->eval);
+  if(UseFD)
+    get_linearized_velocity_fd(head);
+  else
+    get_linearized_velocity_ks(head);
 }
-
-void decompose_tidal(float *tidal,float *delta,float *delta_sm,float *tidal_info)
-{
-  lint ngtot=((lint)(Ngrid*Ngrid))*Ngrid;
-
-#pragma omp parallel default(none)		\
-  shared(tidal,Ngrid,tidal_info,delta_sm,delta,ngtot)
-  {
-    int im;
-    lint index;
-    gsl_vector *eval=gsl_vector_alloc(3);
-    gsl_matrix *tij=gsl_matrix_alloc(3,3);
-    gsl_matrix *evec=gsl_matrix_alloc(3,3);
-    gsl_eigen_symmv_workspace *w=gsl_eigen_symmv_alloc(3);
-
-#pragma omp for
-    for(index=0;index<ngtot;index++) {
-      Esys leig[3];
-
-      gsl_matrix_set(tij,0,0,tidal[0+6*index]);
-      gsl_matrix_set(tij,1,1,tidal[1+6*index]);
-      gsl_matrix_set(tij,2,2,tidal[2+6*index]);
-      gsl_matrix_set(tij,0,1,tidal[3+6*index]);
-      gsl_matrix_set(tij,1,0,tidal[3+6*index]);
-      gsl_matrix_set(tij,0,2,tidal[4+6*index]);
-      gsl_matrix_set(tij,2,0,tidal[4+6*index]);
-      gsl_matrix_set(tij,1,2,tidal[5+6*index]);
-      gsl_matrix_set(tij,2,1,tidal[5+6*index]);
-      
-      gsl_eigen_symmv(tij,eval,evec,w);
-      
-      for(im=0;im<3;im++) {
-	leig[im].eval=gsl_vector_get(eval,im);
-	leig[im].evec[0]=gsl_matrix_get(evec,0,im);
-	leig[im].evec[1]=gsl_matrix_get(evec,1,im);
-	leig[im].evec[2]=gsl_matrix_get(evec,2,im);
-      }
-
-      qsort(leig,3,sizeof(Esys),compare_evals);
-
-#ifdef _DEBUG
-      gsl_matrix *evec_here=gsl_matrix_alloc(3,3);
-      gsl_matrix *tij_here=gsl_matrix_alloc(3,3);
-      gsl_matrix *aux_here1=gsl_matrix_alloc(3,3);
-      gsl_matrix *aux_here2=gsl_matrix_alloc(3,3);
-
-      gsl_matrix_set_zero(evec_here);
-      gsl_matrix_set_zero(tij_here);
-      gsl_matrix_set_zero(aux_here1);
-      gsl_matrix_set_zero(aux_here2);
-
-      gsl_matrix_set(tij_here,0,0,tidal[0+6*index]);
-      gsl_matrix_set(tij_here,1,1,tidal[1+6*index]);
-      gsl_matrix_set(tij_here,2,2,tidal[2+6*index]);
-      gsl_matrix_set(tij_here,0,1,tidal[3+6*index]);
-      gsl_matrix_set(tij_here,1,0,tidal[3+6*index]);
-      gsl_matrix_set(tij_here,0,2,tidal[4+6*index]);
-      gsl_matrix_set(tij_here,2,0,tidal[4+6*index]);
-      gsl_matrix_set(tij_here,1,2,tidal[5+6*index]);
-      gsl_matrix_set(tij_here,2,1,tidal[5+6*index]);
-      
-      for(im=0;im<3;im++) {
-	int jm;
-	for(jm=0;jm<3;jm++)
-	  gsl_matrix_set(evec_here,im,jm,leig[jm].evec[im]);
-      }
-
-      gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1,tij_here,evec_here,0,aux_here1);
-      gsl_blas_dgemm(CblasTrans,CblasNoTrans,1,evec_here,aux_here1,0,aux_here2);
-
-      for(im=0;im<3;im++)
-	printf("%lE ",leig[im].eval);
-      printf("\n-\n");
-      for(im=0;im<3;im++) {
-	int jm;
-	for(jm=0;jm<3;jm++)
-	  printf("%lE ",gsl_matrix_get(aux_here2,im,jm));
-	printf("\n");
-      }
-      gsl_matrix_free(tij_here);
-      gsl_matrix_free(evec_here);
-      gsl_matrix_free(aux_here1);
-      gsl_matrix_free(aux_here2);
-      scanf("%d",&im);
-#endif //_DEBUG
-      
-      tidal_info[14*index+0] =delta[index];
-      tidal_info[14*index+1] =delta_sm[index];
-      tidal_info[14*index+2] =leig[0].eval;
-      tidal_info[14*index+3] =leig[0].evec[0];
-      tidal_info[14*index+4] =leig[0].evec[1];
-      tidal_info[14*index+5] =leig[0].evec[2];
-
-      tidal_info[14*index+6] =leig[1].eval;
-      tidal_info[14*index+7] =leig[1].evec[0];
-      tidal_info[14*index+8] =leig[1].evec[1];
-      tidal_info[14*index+9] =leig[1].evec[2];
-
-      tidal_info[14*index+10]=leig[2].eval;
-      tidal_info[14*index+11]=leig[2].evec[0];
-      tidal_info[14*index+12]=leig[2].evec[1];
-      tidal_info[14*index+13]=leig[2].evec[2];
-    } //end omp for
-
-    gsl_eigen_symmv_free(w);
-    gsl_vector_free(eval);
-    gsl_matrix_free(evec);
-    gsl_matrix_free(tij);
-  } //end omp parallel
-}
-*/

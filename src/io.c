@@ -160,8 +160,8 @@ void read_gadget(char *prefix,int input,ulint *npart,
     if(interp_mode==0) {//NGP
       x_min=-agrid/2;
       x_max=Lbox-agrid/2;
-      x_left_proper=(Ix0_here-0.5)*agrid;
-      x_right_proper=(Ix0_here+Nx_here-0.5)*agrid;
+      x_left_proper=(Ix0_here-0.5f)*agrid;
+      x_right_proper=(Ix0_here+Nx_here-0.5f)*agrid;
     }
     else if(interp_mode==1) {//CIC
       x_min=0;
@@ -179,20 +179,20 @@ void read_gadget(char *prefix,int input,ulint *npart,
     else if(interp_mode==2) {//TSC
       x_min=-agrid/2;
       x_max=Lbox-agrid/2;
-      x_left_proper=(Ix0_here-0.5)*agrid;
-      x_right_proper=(Ix0_here+Nx_here-0.5)*agrid;
+      x_left_proper=(Ix0_here-0.5f)*agrid;
+      x_right_proper=(Ix0_here+Nx_here-0.5f)*agrid;
       x_left_bleft=x_left_proper-agrid;
       x_left_bright=x_left_proper;
       x_right_bleft=x_right_proper;
       x_right_bright=x_right_proper+agrid;
       if(NNodes>1 && NodeThis==0) {
-	x_left_bleft=(Ngrid-1.5)*agrid;
-	x_right_bleft=(Ngrid-0.5)*agrid;
+	x_left_bleft=(Ngrid-1.5f)*agrid;
+	x_right_bleft=(Ngrid-0.5f)*agrid;
 	x_shift_bleft=-Lbox;
       }
       if(NNodes>1 && NodeThis==NNodes-1) {
-	x_left_bright=-0.5*agrid;
-	x_right_bright=0.5*agrid;
+	x_left_bright=-0.5f*agrid;
+	x_right_bright=0.5f*agrid;
 	x_shift_bright=Lbox;
       }
     }
@@ -229,7 +229,7 @@ void read_gadget(char *prefix,int input,ulint *npart,
       (*head_out).num_files=1;
     }
 
-    norm_vel=1./sqrt(head.time);
+    norm_vel=(float)(1./sqrt(head.time));
 
     fclose(snap);
 
@@ -363,7 +363,7 @@ typedef struct {
   float evec[3];
 } Esys;
 
-int compare_evals(const void *p1,const void *p2)
+static int compare_evals(const void *p1,const void *p2)
 {
   Esys *e1=(Esys *)p1;
   Esys *e2=(Esys *)p2;

@@ -17,9 +17,10 @@ int main(int argc,char **argv)
     if(!strcmp(*c,"-in")) sprintf(fnameIn,"%s",*++c);
     else if(!strcmp(*c,"-out")) sprintf(fnameOut,"%s",*++c);
     else if(!strcmp(*c,"-ngrid")) Ngrid=atoi(*++c);
-    else if(!strcmp(*c,"-smooth")) r_smooth=atof(*++c);
+    else if(!strcmp(*c,"-smooth")) r_smooth=(float)(atof(*++c));
     else if(!strcmp(*c,"-interp")) sprintf(interp_method,"%s",*++c);
     else if(!strcmp(*c,"-diag_tidal")) TaskTidalDiag=1;
+    else if(!strcmp(*c,"-use_finite_differences")) UseFD=1;
     else if(!strcmp(*c,"-do")) {
       int ich=0;
       char d=(*++c)[ich];
@@ -46,8 +47,10 @@ int main(int argc,char **argv)
 	fprintf(stderr,"  -ngrid      -> #cells per side\n");
 	fprintf(stderr,"  -smooth     -> smoothing length (in same units as simulation box)\n");
 	fprintf(stderr,"  -interp     -> particle interpolation scheme: NGP, CIC or TSC\n");
-	fprintf(stderr,"  -do         -> concatenate tasks: velocity (v), tidal field (t), linearized velocity (l)\n");
+	fprintf(stderr,"  -do         -> concatenate tasks: velocity (v), tidal field (t),"
+		" linearized velocity (l)\n");
 	fprintf(stderr,"  -diag_tidal -> diagonalize tidal tensor\n");
+	fprintf(stderr,"  -use_finite_differences -> use central FDs for derivatives\n");
 	fprintf(stderr,"  -h          -> this help\n\n");
 	return 0;
       }
@@ -83,6 +86,7 @@ int main(int argc,char **argv)
     if(TaskLinvel)
       printf(" LV");
     printf("\n");
+    printf("   Use finite differences : %d\n",UseFD);
     printf("\n");
   }
   if(!strcmp(interp_method,"NGP"))
@@ -97,7 +101,7 @@ int main(int argc,char **argv)
   if(NodeThis==0)
     printf("* Reading header\n");
   read_gadget_header(fnameIn,input_format,&head);
-  Lbox=head.BoxSize;
+  Lbox=(float)(head.BoxSize);
   Npart_total=0;
   for(ii=0;ii<6;ii++)
     Npart_total+=(head.npartTotal[ii]+((unsigned long long)(head.npartTotalHigh[ii]) << 32));

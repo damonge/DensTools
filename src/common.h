@@ -31,6 +31,8 @@ typedef float complex fcomplex;
 extern int NNodes;
 extern int NodeThis;
 
+extern int UseFD; //Use finite differences for any derivative
+
 extern int Nx_here; //Number of planes in this node
 extern int Ix0_here; //First plane in this node
 extern int Ny_here;
