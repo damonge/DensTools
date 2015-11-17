@@ -307,6 +307,7 @@ void read_gadget(char *prefix,int input,ulint *npart,
       my_fread(&block2,sizeof(int),1,snap);
       gad_check_block(block1,block2);
 
+      np_read+=np_new;
       if(np_got_here==0) continue;
 
       np_got_here_b=0;
@@ -348,7 +349,6 @@ void read_gadget(char *prefix,int input,ulint *npart,
       gad_check_block(block1,block2);
 
       fclose(snap);
-      np_read+=np_new;
     }
     if(np_read!=Npart_total) {
       report_error(1,
