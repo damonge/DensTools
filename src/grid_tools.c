@@ -940,3 +940,303 @@ void get_linearized_velocity(gad_header head)
   else
     get_linearized_velocity_ks(head);
 }
+
+static void get_linearized_vpot_ks(gad_header head)
+{
+  int iy;
+  fftwf_plan plan_p_tor;
+  float dk=(float)(2*M_PI/Lbox);
+
+  double a=head.time;
+  double hub=sqrt(head.Omega0/(a*a*a)+head.OmegaLambda+(1-head.Omega0-head.OmegaLambda)/(a*a));
+  double omega_m=head.Omega0/(head.Omega0+head.OmegaLambda*a*a*a+
+			      (1-head.Omega0-head.OmegaLambda)*a);
+  float prefac_vel=(float)(100*pow(omega_m,0.55)*hub);
+
+#ifdef _DEBUG
+  printf("Node %d Planning\n",NodeThis);
+#endif //_DEBUG
+  plan_p_tor=fftwf_mpi_plan_dft_c2r_3d(Ngrid,Ngrid,Ngrid,Cnlpot_local,Nlpot_local,
+				       MPI_COMM_WORLD,FFTW_ESTIMATE | FFTW_MPI_TRANSPOSED_IN);
+
+#ifdef _DEBUG
+  printf("Node %d computing linearized velocity\n",NodeThis);
+#endif //_DEBUG
+  for(iy=0;iy<Ny_here;iy++) {
+    int ix;
+    int iy_true=iy+Iy0_here;
+    int iy0= iy_true<=(Ngrid/2) ? iy_true : iy_true-Ngrid;
+    for(ix=0;ix<Ngrid;ix++) {
+      int iz;
+      int ix0= ix<=(Ngrid/2) ? ix : ix-Ngrid;
+      for(iz=0;iz<Ngrid/2+1;iz++) {
+	float i_kmod2=0;
+	float kmod2=(float)(ix0*ix0+iy0*iy0+iz*iz);
+	long index=iz+(Ngrid/2+1)*((long)(ix+Ngrid*iy));
+
+	if(kmod2>0)
+	  i_kmod2=(float)(1.0f/(dk*dk*kmod2));
+
+	Cnlpot_local[index]=prefac_vel*Cdens_sm_local[index]*i_kmod2; //phi_v=f*H*delta/k^2
+      }
+    }
+  }
+
+#ifdef _DEBUG
+  printf("Node %d Transforming back\n",NodeThis);
+#endif //_DEBUG
+  fftwf_execute(plan_p_tor);
+  fftwf_destroy_plan(plan_p_tor);
+}
+
+static void get_linearized_vpot_fd(gad_header head)
+{
+  int iy;
+  fftwf_plan plan_p_tor;
+  float agrid=Lbox/Ngrid;
+  fcomplex w=(fcomplex)(cexp(I*2*M_PI/Ngrid));
+
+  double a=head.time;
+  double hub=sqrt(head.Omega0/(a*a*a)+head.OmegaLambda+(1-head.Omega0-head.OmegaLambda)/(a*a));
+  double omega_m=head.Omega0/(head.Omega0+head.OmegaLambda*a*a*a+
+			      (1-head.Omega0-head.OmegaLambda)*a);
+  float prefac_vel=(float)(100*pow(omega_m,0.55)*hub);
+
+#ifdef _DEBUG
+  printf("Node %d Planning\n",NodeThis);
+#endif //_DEBUG
+  for(iy=0;iy<3;iy++)
+    plan_p_tor=fftwf_mpi_plan_dft_c2r_3d(Ngrid,Ngrid,Ngrid,Cnlpot_local,Nlpot_local,
+					 MPI_COMM_WORLD,FFTW_ESTIMATE | FFTW_MPI_TRANSPOSED_IN);
+
+#ifdef _DEBUG
+  printf("Node %d computing linearized velocity\n",NodeThis);
+#endif //_DEBUG
+  for(iy=0;iy<Ny_here;iy++) {
+    int ix;
+    int iy_true=iy+Iy0_here;
+    fcomplex wy=(fcomplex)(cexp(I*2*M_PI*iy_true/Ngrid));
+    fcomplex wx=1.0f;
+    for(ix=0;ix<Ngrid;ix++) {
+      int iz;
+      fcomplex wz=1.0f;
+      for(iz=0;iz<Ngrid/2+1;iz++) {
+	long index=iz+(Ngrid/2+1)*((long)(ix+Ngrid*iy));
+	if(index==0) {
+	  Clvel_local[0][index]=0;
+	  Clvel_local[1][index]=0;
+	  Clvel_local[2][index]=0;
+	}
+	else {
+	  fcomplex i_kmod2=1.0f/(wx+1.0f/wx+wy+1.0f/wy+wz+1.0f/wz-6);
+	  Cnlpot_local[index]=prefac_vel*Cdens_sm_local[index]*agrid*agrid*i_kmod2;
+	}
+	wz*=w;
+      }
+      wx*=w;
+    }
+  }
+
+#ifdef _DEBUG
+  printf("Node %d Transforming back\n",NodeThis);
+#endif //_DEBUG
+  fftwf_execute(plan_p_tor);
+  fftwf_destroy_plan(plan_p_tor);
+}
+
+static void get_linearized_vpot(gad_header head)
+{
+  if(UseFD)
+    get_linearized_vpot_ks(head);
+  else
+    get_linearized_vpot_ks(head);
+}
+
+void get_nonlinear_velocity(gad_header head)
+{
+  int ix;
+  MPI_Status stat;
+  int mod2_here=0;
+  long slice_size=2*(Ngrid/2+1)*Ngrid;
+  long ncells_total=Ngrid*((long)(Ngrid*Ngrid));
+  double a=head.time;
+  double hub=sqrt(head.Omega0/(a*a*a)+head.OmegaLambda+(1-head.Omega0-head.OmegaLambda)/(a*a));
+  double omega_m=head.Omega0/(head.Omega0+head.OmegaLambda*a*a*a+
+			      (1-head.Omega0-head.OmegaLambda)*a);
+  float prefac_vel=(float)(100*pow(omega_m,0.55)*hub);
+  double res_total=1000;
+  int ngz=2*(Ngrid/2+1);
+  float dx=Lbox/Ngrid;
+  float i_dx=Ngrid/Lbox;
+  double std_here=0,std_total=0;
+
+  //Obtain linear solution
+  get_linearized_vpot(head);
+
+  //Compute variance of linear solution
+  for(ix=0;ix<Nx_here;ix++) {
+    int iy;
+    long ix_0=ix=ngz*Ngrid;
+    for(iy=0;iy<Ngrid;iy++) {
+      int iz;
+      long iy_0=iy*Ngrid;
+      for(iz=0;iz<Ngrid;iz++) {
+	long iz_0=iz;
+	float phi=Nlpot_local[ix_0+iy_0+iz_0];
+	std_here+=phi*phi;
+      }
+    }
+  }
+  MPI_Allreduce(&std_here,&std_total,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+  std_total=sqrt(std_total/ncells_total);
+  printf("STD %lE\n",std_total);
+
+  //Transform back the smoothed density field
+  get_smoothed_density_real();
+
+  //Get slices to left and right of the density field to compute gradient
+  MPI_Sendrecv(&(Dens_sm_local[(Nx_here-1)*slice_size]),slice_size,MPI_FLOAT,NodeRight,3,
+	       SliceLeft_Dens,slice_size,MPI_FLOAT,NodeLeft,3,MPI_COMM_WORLD,&stat);
+  MPI_Sendrecv(Dens_sm_local,slice_size,MPI_FLOAT,NodeLeft,4,
+	       SliceRight_Dens,slice_size,MPI_FLOAT,NodeRight,4,MPI_COMM_WORLD,&stat);
+
+#define MINDENS 1E-20
+  //Solve non-linear equation using relaxation method
+  int iter=0;
+  double res_here=0;
+  while(res_total>0.01) {
+    //Get slices to left and right of the new potential to compute gradient
+    MPI_Sendrecv(&(Nlpot_local[(Nx_here-1)*slice_size]),slice_size,MPI_FLOAT,NodeRight,1,
+		 SliceLeft_Nlpot,slice_size,MPI_FLOAT,NodeLeft,1,MPI_COMM_WORLD,&stat);
+    MPI_Sendrecv(Nlpot_local,slice_size,MPI_FLOAT,NodeLeft,2,
+		 SliceRight_Nlpot,slice_size,MPI_FLOAT,NodeRight,2,MPI_COMM_WORLD,&stat);
+  
+    for(ix=0;ix<Nx_here;ix++) {
+      int iy;
+      long ix_0=ix;
+      long ix_hi=ix+1;
+      long ix_lo=ix-1;
+      int ix_true=ix+Ix0_here;
+      if(ix==0) ix_lo=Ngrid-1;
+      if(ix==Ngrid-1) ix_hi=0;
+      ix_0*=ngz*Ngrid;
+      ix_hi*=ngz*Ngrid;
+      ix_lo*=ngz*Ngrid;
+      for(iy=0;iy<Ngrid;iy++) {
+	int iz;
+	long iy_0=iy;
+	long iy_hi=iy+1;
+	long iy_lo=iy-1;
+	if(iy==0) iy_lo=Ngrid-1;
+	if(iy==Ngrid-1) iy_hi=0;
+	iy_0*=ngz;
+	iy_hi*=ngz;
+	iy_lo*=ngz;
+	for(iz=0;iz<Ngrid;iz++) {
+	  if((iz+iz+ix_true)%2==mod2_here) {
+	    int ax;
+	    float source,dens,inv_dens;
+	    float ddphi[3],dphi[3],ddens[3];
+	    long iz_0=iz;
+	    long iz_hi=iz+1;
+	    long iz_lo=iz-1;
+	    if(iz==0) iz_lo=Ngrid-1;
+	    if(iz==Ngrid-1) iz_hi=0;
+	    dens=Dens_sm_local[ix_0+iy_0+iz_0];
+	    if(1+dens<=MINDENS)
+	      inv_dens=1./MINDENS;
+	    else 
+	      inv_dens=1./(1+dens);
+	    if(ix==0) {
+	      dphi[0]=0.5*(Nlpot_local[ix_hi+iy_0+iz_0]-SliceLeft_Nlpot[iy_0+iz_0]);
+	      ddens[0]=0.5*(Dens_sm_local[ix_hi+iy_0+iz_0]-SliceLeft_Dens[iy_0+iz_0]);
+	      ddphi[0]=Nlpot_local[ix_hi+iy_0+iz_0]+SliceLeft_Nlpot[iy_0+iz_0];
+	    }
+	    else if(ix==Nx_here-1) {
+	      dphi[0]=0.5*(SliceRight_Nlpot[iy_0+iz_0]-Nlpot_local[ix_lo+iy_0+iz_0]);
+	      ddens[0]=0.5*(SliceRight_Dens[iy_0+iz_0]-Dens_sm_local[ix_lo+iy_0+iz_0]);
+	      ddphi[0]=SliceRight_Nlpot[iy_0+iz_0]+Nlpot_local[ix_lo+iy_0+iz_0];
+	    }
+	    else {
+	      dphi[0]=0.5*(Nlpot_local[ix_hi+iy_0+iz_0]-Nlpot_local[ix_lo+iy_0+iz_0]);
+	      ddens[0]=0.5*(Dens_sm_local[ix_hi+iy_0+iz_0]-Dens_sm_local[ix_lo+iy_0+iz_0]);
+	      ddphi[0]=Nlpot_local[ix_hi+iy_0+iz_0]+Nlpot_local[ix_lo+iy_0+iz_0];
+	    }
+	    //	    ddens[0]=0.5*(Dens_sm_local[ix_hi+iy_0+iz_0]-Dens_sm_local[ix_lo+iy_0+iz_0]);
+	    ddens[1]=0.5*(Dens_sm_local[ix_0+iy_hi+iz_0]-Dens_sm_local[ix_0+iy_lo+iz_0]);
+	    ddens[2]=0.5*(Dens_sm_local[ix_0+iy_0+iz_hi]-Dens_sm_local[ix_0+iy_0+iz_lo]);
+	    //	    dphi[0]=0.5*(Nlpot_local[ix_hi+iy_0+iz_0]-Nlpot_local[ix_lo+iy_0+iz_0]);
+	    dphi[1]=0.5*(Nlpot_local[ix_0+iy_hi+iz_0]-Nlpot_local[ix_0+iy_lo+iz_0]);
+	    dphi[2]=0.5*(Nlpot_local[ix_0+iy_0+iz_hi]-Nlpot_local[ix_0+iy_0+iz_lo]);
+	    //	    ddphi[0]=Nlpot_local[ix_hi+iy_0+iz_0]+Nlpot_local[ix_lo+iy_0+iz_0];
+	    ddphi[1]=Nlpot_local[ix_0+iy_hi+iz_0]+Nlpot_local[ix_0+iy_lo+iz_0];
+	    ddphi[2]=Nlpot_local[ix_0+iy_0+iz_hi]+Nlpot_local[ix_0+iy_0+iz_lo];
+	    
+	    source=prefac_vel*dens*dx*dx; // H*f*delta*h^2
+	    for(ax=0;ax<3;ax++)
+	      source+=dphi[ax]*ddens[ax]; // nabla(phi)*nabla(delta)
+	    source*=inv_dens; //(H*f*delta*h^2+nabla(phi)*nabla(delta))/(1+delta)
+	    for(ax=0;ax<3;ax++)
+	      source+=ddphi[ax]; //Add rest of the laplacian
+	    source/=6.;
+	    res_here+=fabs(Nlpot_local[ix_0+iy_0+iz_0]-source);
+	    Nlpot_local[ix_0+iy_0+iz_0]=source;
+	  }
+	}
+      }
+    }
+
+    mod2_here=(mod2_here+1)%2;
+    if(mod2_here==0) {
+      iter++;
+      res_total=0;
+      MPI_Allreduce(&res_here,&res_total,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+      res_total/=(ncells_total*std_total);
+      res_here=0;
+      if(NodeThis==0)
+	printf(" %d-th iteration, residual = %lE\n",iter,res_total);
+    }
+  }
+
+  //Take gradient of velocity potential (using finite differences here)
+  MPI_Sendrecv(&(Nlpot_local[(Nx_here-1)*slice_size]),slice_size,MPI_FLOAT,NodeRight,1,
+	       SliceLeft_Nlpot,slice_size,MPI_FLOAT,NodeLeft,1,MPI_COMM_WORLD,&stat);
+  MPI_Sendrecv(Nlpot_local,slice_size,MPI_FLOAT,NodeLeft,2,
+	       SliceRight_Nlpot,slice_size,MPI_FLOAT,NodeRight,2,MPI_COMM_WORLD,&stat);
+  for(ix=0;ix<Nx_here;ix++) {
+    int iy;
+    long ix_0=ix;
+    long ix_hi=ix+1;
+    long ix_lo=ix-1;
+    int ix_true=ix+Ix0_here;
+    if(ix==0) ix_lo=Ngrid-1;
+    if(ix==Ngrid-1) ix_hi=0;
+    ix_0*=ngz*Ngrid;
+    ix_hi*=ngz*Ngrid;
+    ix_lo*=ngz*Ngrid;
+    for(iy=0;iy<Ngrid;iy++) {
+      int iz;
+      long iy_0=iy;
+      long iy_hi=iy+1;
+      long iy_lo=iy-1;
+      if(iy==0) iy_lo=Ngrid-1;
+      if(iy==Ngrid-1) iy_hi=0;
+      iy_0*=ngz;
+      iy_hi*=ngz;
+      iy_lo*=ngz;
+      for(iz=0;iz<Ngrid;iz++) {
+	long iz_0=iz;
+	long iz_hi=iz+1;
+	long iz_lo=iz-1;
+	if(ix==0)
+	  Nlvel_local[0][ix_0+iy_0+iz_0]=0.5*i_dx*(Nlpot_local[ix_hi+iy_0+iz_0]-SliceLeft_Nlpot[iy_0+iz_0]);
+	else if(ix==Nx_here-1)
+	  Nlvel_local[0][ix_0+iy_0+iz_0]=0.5*i_dx*(SliceRight_Nlpot[iy_0+iz_0]-Nlpot_local[ix_lo+iy_0+iz_0]);
+	else
+	  Nlvel_local[0][ix_0+iy_0+iz_0]=0.5*i_dx*(Nlpot_local[ix_hi+iy_0+iz_0]-Nlpot_local[ix_lo+iy_0+iz_0]);
+	Nlvel_local[1][ix_0+iy_0+iz_0]=0.5*i_dx*(Nlpot_local[ix_0+iy_hi+iz_0]-Nlpot_local[ix_0+iy_lo+iz_0]);
+	Nlvel_local[2][ix_0+iy_0+iz_0]=0.5*i_dx*(Nlpot_local[ix_0+iy_0+iz_hi]-Nlpot_local[ix_0+iy_0+iz_lo]);
+      }
+    }
+  }
+}

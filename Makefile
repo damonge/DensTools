@@ -13,8 +13,8 @@ DEFINEFLAGS += -D_DEBUG
 ###If two or more of the dependencies reside in the same paths, only
 ###one instance is necessary.
 #GSL
-GSL_INC = -I/home/damonge/include
-GSL_LIB = -L/home/damonge/lib
+GSL_INC = -I/users/damonge/include
+GSL_LIB = -L/users/damonge/lib
 #FFTW
 FFTW_INC = 
 FFTW_LIB = 

@@ -461,6 +461,30 @@ void write_output(char *prefix)
     fclose(fo);
   }
 
+  if(TaskNlvel) {
+    sprintf(fname,"%s_nlvel.%04d",prefix,NodeThis);
+    num_grids=3;
+    fo=my_fopen(fname,"wb");
+    my_fwrite(&(num_grids),sizeof(int),1,fo);
+    my_fwrite(&(Ngrid),sizeof(int),1,fo);
+    my_fwrite(&(Nx_here),sizeof(int),1,fo);
+    for(ix=0;ix<Nx_here;ix++) {
+      int iy;
+      int ix_id=Ix0_here+ix;
+      my_fwrite(&(ix_id),sizeof(int),1,fo);
+      for(iy=0;iy<Ngrid;iy++) {
+	int iz;
+	for(iz=0;iz<Ngrid;iz++) {
+	  lint index=iz+2*(Ngrid/2+1)*((lint)(iy+ix*Ngrid));
+	  my_fwrite(&(Nlvel_local[0][index]),sizeof(float),1,fo);
+	  my_fwrite(&(Nlvel_local[1][index]),sizeof(float),1,fo);
+	  my_fwrite(&(Nlvel_local[2][index]),sizeof(float),1,fo);
+	}
+      }
+    }
+    fclose(fo);
+  }
+
   if(TaskTidal && !TaskTidalDiag) {
     sprintf(fname,"%s_tidal.%04d",prefix,NodeThis);
     num_grids=6;

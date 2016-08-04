@@ -30,6 +30,8 @@ typedef float complex fcomplex;
 
 extern int NNodes;
 extern int NodeThis;
+extern int NodeLeft;
+extern int NodeRight;
 
 extern int UseFD; //Use finite differences for any derivative
 
@@ -58,6 +60,15 @@ extern fftwf_complex **Ctid_local;
 extern int TaskLinvel;
 extern float **Lvel_local;
 extern fftwf_complex **Clvel_local;
+
+extern int TaskNlvel;
+extern float *Nlpot_local;
+extern fftwf_complex *Cnlpot_local;
+extern float **Nlvel_local;
+extern float *SliceLeft_Nlpot;
+extern float *SliceRight_Nlpot;
+extern float *SliceLeft_Dens;
+extern float *SliceRight_Dens;
 
 extern ulint Npart_alloc;
 extern ulint Npart_saved;
@@ -113,5 +124,6 @@ void smooth_density_fourier(float r_smooth);
 void get_smoothed_density_real(void);
 void get_tidal_field(void);
 void get_linearized_velocity(gad_header head);
+void get_nonlinear_velocity(gad_header head);
 
 #endif //_COMMON_H_

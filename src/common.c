@@ -2,6 +2,8 @@
 
 int NNodes;
 int NodeThis;
+int NodeLeft;
+int NodeRight;
 
 int UseFD=0;
 
@@ -27,6 +29,15 @@ fftwf_complex **Ctid_local;
 int TaskLinvel=0;
 float **Lvel_local;
 fftwf_complex **Clvel_local;
+
+int TaskNlvel=0;
+float *Nlpot_local;
+fftwf_complex *Cnlpot_local;
+float **Nlvel_local;
+float *SliceLeft_Dens;
+float *SliceRight_Dens;
+float *SliceLeft_Nlpot;
+float *SliceRight_Nlpot;
 
 ulint Npart_alloc,Npart_saved,Npart_total;
 float *Pos,*Vel;
@@ -55,6 +66,16 @@ void end_all(void)
     for(i=0;i<3;i++)
       fftwf_free(Lvel_local[i]);
     free(Lvel_local);
+  }
+  if(TaskNlvel) {
+    fftwf_free(Nlpot_local);
+    for(i=0;i<3;i++)
+      fftwf_free(Nlvel_local[i]);
+    free(Nlvel_local);
+    free(SliceLeft_Dens);
+    free(SliceRight_Dens);
+    free(SliceLeft_Nlpot);
+    free(SliceRight_Nlpot);
   }
   if(TaskVel) {
     for(i=0;i<3;i++)
@@ -111,6 +132,23 @@ void domain_decomp(void)
 	report_error(1,"Couldn't allocate density field\n");
       Clvel_local[i]=(fftwf_complex *)(Lvel_local[i]);
     }
+  }
+  if(TaskNlvel) {
+    long slice_size=Ngrid*2*(Ngrid/2+1);
+    Nlpot_local=fftwf_alloc_real(2*dsize);
+    if(Nlpot_local==NULL)
+      report_error(1,"Couldn't allocate density field\n");
+    Cnlpot_local=(fftwf_complex *)Nlpot_local;
+    Nlvel_local=my_malloc(3*sizeof(float *));
+    for(i=0;i<3;i++) {
+      Nlvel_local[i]=fftwf_alloc_real(2*dsize);
+      if(Nlvel_local[i]==NULL)
+	report_error(1,"Couldn't allocate density field\n");
+    }
+    SliceLeft_Dens=my_malloc(slice_size*sizeof(float));
+    SliceRight_Dens=my_malloc(slice_size*sizeof(float));
+    SliceLeft_Nlpot=my_malloc(slice_size*sizeof(float));
+    SliceRight_Nlpot=my_malloc(slice_size*sizeof(float));
   }
   if(TaskVel) {
     Vel_local=my_malloc(3*sizeof(float *));
@@ -192,4 +230,12 @@ void mpi_init(int* p_argc,char*** p_argv)
 
   MPI_Comm_size(MPI_COMM_WORLD,&NNodes);
   MPI_Comm_rank(MPI_COMM_WORLD,&NodeThis);
+  if(NodeThis==0)
+    NodeLeft=NNodes-1;
+  else
+    NodeLeft=NodeThis-1;
+  if(NodeThis==NNodes-1)
+    NodeRight=0;
+  else
+    NodeRight=NodeThis+1;
 }
