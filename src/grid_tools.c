@@ -1110,7 +1110,7 @@ void get_nonlinear_velocity(gad_header head)
 		 SliceLeft_Nlpot,slice_size,MPI_FLOAT,NodeLeft,1,MPI_COMM_WORLD,&stat);
     MPI_Sendrecv(Nlpot_local,slice_size,MPI_FLOAT,NodeLeft,2,
 		 SliceRight_Nlpot,slice_size,MPI_FLOAT,NodeRight,2,MPI_COMM_WORLD,&stat);
-  
+
     for(ix=0;ix<Nx_here;ix++) {
       int iy;
       long ix_0=ix;
@@ -1162,16 +1162,13 @@ void get_nonlinear_velocity(gad_header head)
 	      ddens[0]=0.5*(Dens_sm_local[ix_hi+iy_0+iz_0]-Dens_sm_local[ix_lo+iy_0+iz_0]);
 	      ddphi[0]=Nlpot_local[ix_hi+iy_0+iz_0]+Nlpot_local[ix_lo+iy_0+iz_0];
 	    }
-	    //	    ddens[0]=0.5*(Dens_sm_local[ix_hi+iy_0+iz_0]-Dens_sm_local[ix_lo+iy_0+iz_0]);
 	    ddens[1]=0.5*(Dens_sm_local[ix_0+iy_hi+iz_0]-Dens_sm_local[ix_0+iy_lo+iz_0]);
 	    ddens[2]=0.5*(Dens_sm_local[ix_0+iy_0+iz_hi]-Dens_sm_local[ix_0+iy_0+iz_lo]);
-	    //	    dphi[0]=0.5*(Nlpot_local[ix_hi+iy_0+iz_0]-Nlpot_local[ix_lo+iy_0+iz_0]);
 	    dphi[1]=0.5*(Nlpot_local[ix_0+iy_hi+iz_0]-Nlpot_local[ix_0+iy_lo+iz_0]);
 	    dphi[2]=0.5*(Nlpot_local[ix_0+iy_0+iz_hi]-Nlpot_local[ix_0+iy_0+iz_lo]);
-	    //	    ddphi[0]=Nlpot_local[ix_hi+iy_0+iz_0]+Nlpot_local[ix_lo+iy_0+iz_0];
 	    ddphi[1]=Nlpot_local[ix_0+iy_hi+iz_0]+Nlpot_local[ix_0+iy_lo+iz_0];
 	    ddphi[2]=Nlpot_local[ix_0+iy_0+iz_hi]+Nlpot_local[ix_0+iy_0+iz_lo];
-	    
+
 	    source=prefac_vel*dens*dx*dx; // H*f*delta*h^2
 	    for(ax=0;ax<3;ax++)
 	      source+=dphi[ax]*ddens[ax]; // nabla(phi)*nabla(delta)
@@ -1228,6 +1225,8 @@ void get_nonlinear_velocity(gad_header head)
 	long iz_0=iz;
 	long iz_hi=iz+1;
 	long iz_lo=iz-1;
+	if(iz==0) iz_lo=Ngrid-1;
+	if(iz==Ngrid-1) iz_hi=0;
 	if(ix==0)
 	  Nlvel_local[0][ix_0+iy_0+iz_0]=0.5*i_dx*(Nlpot_local[ix_hi+iy_0+iz_0]-SliceLeft_Nlpot[iy_0+iz_0]);
 	else if(ix==Nx_here-1)
