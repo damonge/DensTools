@@ -1169,7 +1169,7 @@ void get_nonlinear_velocity(gad_header head)
 	    ddphi[1]=Nlpot_local[ix_0+iy_hi+iz_0]+Nlpot_local[ix_0+iy_lo+iz_0];
 	    ddphi[2]=Nlpot_local[ix_0+iy_0+iz_hi]+Nlpot_local[ix_0+iy_0+iz_lo];
 
-	    source=prefac_vel*dens*dens*dx*dx; // H*f*delta*h^2
+	    source=prefac_vel*dens*dx*dx; // H*f*delta*h^2
 	    for(ax=0;ax<3;ax++)
 	      source+=dphi[ax]*ddens[ax]; // nabla(phi)*nabla(delta)
 	    source*=inv_dens; //(H*f*delta*h^2+nabla(phi)*nabla(delta))/(1+delta)
