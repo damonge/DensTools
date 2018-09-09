@@ -103,6 +103,7 @@ void read_gadget_header(char *prefix,int input,gad_header *head_out)
   my_fread(&head,sizeof(gad_header),1,snap);
   my_fread(&block2,sizeof(int),1,snap);
   gad_check_block(block1,block2);
+  fclose(snap);
 
   if(head.num_files!=nfils) {
     report_error(1,
