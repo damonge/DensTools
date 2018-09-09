@@ -1047,7 +1047,7 @@ static void get_linearized_vpot_fd(gad_header head)
 static void get_linearized_vpot(gad_header head)
 {
   if(UseFD)
-    get_linearized_vpot_ks(head);
+    get_linearized_vpot_fd(head);
   else
     get_linearized_vpot_ks(head);
 }
@@ -1133,7 +1133,7 @@ void get_nonlinear_velocity(gad_header head)
 	iy_hi*=ngz;
 	iy_lo*=ngz;
 	for(iz=0;iz<Ngrid;iz++) {
-	  if((iz+iz+ix_true)%2==mod2_here) {
+	  if((iz+iy+ix_true)%2==mod2_here) {
 	    int ax;
 	    float source,dens,inv_dens;
 	    float ddphi[3],dphi[3],ddens[3];

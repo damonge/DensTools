@@ -307,7 +307,10 @@ void read_gadget(char *prefix,int input,ulint *npart,
       gad_check_block(block1,block2);
 
       np_read+=np_new;
-      if(np_got_here==0) continue;
+      if(np_got_here==0) {
+	fclose(snap);
+	continue;
+      }	
 
       np_got_here_b=0;
       if(input==2)
