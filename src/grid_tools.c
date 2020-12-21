@@ -635,7 +635,22 @@ void compute_velocity_and_overdensity(ulint np,ulint np_total,float *pos,float *
   }
 }
 
-void smooth_density_fourier(float r_smooth)
+static double window_smooth(double x2, int gaus)
+{
+  if(gaus)
+    return exp(-0.5*x2);
+  else { // Top-hat smoothing.
+    if(x2<0.04) // Taylor expansion below x=0.2 (1E-6 accurate).
+      return 1-0.125*x2+0.00520833*x2*x2;
+    else {
+      double x=sqrt(x2);
+      double j1=gsl_sf_bessel_J1(x);
+      return 2*j1/x;
+    }
+  }
+}
+
+void smooth_density_fourier(float r_smooth, int gaus)
 {
   int iy;
   fftwf_plan plan_tof,plan_tor;
@@ -669,7 +684,7 @@ void smooth_density_fourier(float r_smooth)
       int ix0= ix<=(Ngrid/2) ? ix : ix-Ngrid;
       for(iz=0;iz<Ngrid/2+1;iz++) {
 	float x2=x_smooth2*(ix0*ix0+iy0*iy0+iz*iz);
-	float sm=(float)(exp(-0.5*x2));
+        float sm=(float)(window_smooth((double)x2, gaus));
 	long index=iz+(Ngrid/2+1)*((long)(ix+Ngrid*iy));
 
 	Cdens_local[index]*=norm;
