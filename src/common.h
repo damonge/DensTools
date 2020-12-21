@@ -11,6 +11,7 @@
 #include <fftw3.h>
 #include <fftw3-mpi.h>
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_blas.h>
 
@@ -48,6 +49,10 @@ extern fftwf_complex *Cdens_local;
 extern int TaskSmooth;
 extern float *Dens_sm_local;
 extern fftwf_complex *Cdens_sm_local;
+
+extern int TaskFractalD;
+extern float *Dens_smD_local;
+extern fftwf_complex *Cdens_smD_local;
 
 extern int TaskVel;
 extern float **Vel_local;
@@ -120,7 +125,7 @@ void write_output(char *prefix);
 void compute_overdensity(ulint np,ulint np_total,float *pos,float *delta,int interp_order);
 void compute_velocity_and_overdensity(ulint np,ulint np_total,float *pos,float *vel,
 				      float *delta,float **velgrid,int interp_order);
-void smooth_density_fourier(float r_smooth);
+void smooth_density_fourier(float r_smooth,int gaus);
 void get_smoothed_density_real(void);
 void get_tidal_field(void);
 void get_linearized_velocity(gad_header head);

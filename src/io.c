@@ -441,6 +441,25 @@ void write_output(char *prefix)
     fclose(fo);
   }
 
+  if(TaskFractalD) {
+    sprintf(fname,"%s_dens_smD.%04d",prefix,NodeThis);
+    num_grids=1;
+    fo=my_fopen(fname,"wb");
+    my_fwrite(&(num_grids),sizeof(int),1,fo);
+    my_fwrite(&(Ngrid),sizeof(int),1,fo);
+    my_fwrite(&(Nx_here),sizeof(int),1,fo);
+    for(ix=0;ix<Nx_here;ix++) {
+      int iy;
+      int ix_id=Ix0_here+ix;
+      my_fwrite(&(ix_id),sizeof(int),1,fo);
+      for(iy=0;iy<Ngrid;iy++) {
+	lint index0=2*(Ngrid/2+1)*((lint)(iy+ix*Ngrid));
+	my_fwrite(&(Dens_smD_local[index0]),sizeof(float),Ngrid,fo);
+      }
+    }
+    fclose(fo);
+  }
+
   if(TaskLinvel) {
     sprintf(fname,"%s_linvel.%04d",prefix,NodeThis);
     num_grids=3;
