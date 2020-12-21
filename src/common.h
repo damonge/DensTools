@@ -11,7 +11,6 @@
 #include <fftw3.h>
 #include <fftw3-mpi.h>
 #include <gsl/gsl_math.h>
-#include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_blas.h>
 
