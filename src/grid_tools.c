@@ -635,17 +635,29 @@ void compute_velocity_and_overdensity(ulint np,ulint np_total,float *pos,float *
   }
 }
 
-static double window_smooth(double x2, int gaus)
+static double window_smooth(double x2, int gaus, int der)
 {
-  if(gaus)
-    return exp(-0.5*x2);
+  if(gaus) {
+    if(der)
+      return (3-x2)*exp(-0.5*x2);
+    else
+      return exp(-0.5*x2);
+  }
   else { // Top-hat smoothing.
-    if(x2<0.04) // Taylor expansion below x=0.2 (1E-6 accurate).
-      return 1-0.125*x2+0.00520833*x2*x2;
+    if(x2<0.04) {// Taylor expansion below x=0.2 (1E-6 accurate).
+      if(der)
+        return 3-0.5*x2+0.025*x2*x2;
+      else
+        return 1-0.1*x2+0.00357143*x2*x2;
+    }
     else {
       double x=sqrt(x2);
-      double j1=gsl_sf_bessel_J1(x);
-      return 2*j1/x;
+      if(der)
+        return 3*sin(x)/x;
+      else {
+        double j1=(sin(x)-x*cos(x))/x2;
+        return 3*j1/x;
+      }
     }
   }
 }
@@ -684,11 +696,15 @@ void smooth_density_fourier(float r_smooth, int gaus)
       int ix0= ix<=(Ngrid/2) ? ix : ix-Ngrid;
       for(iz=0;iz<Ngrid/2+1;iz++) {
 	float x2=x_smooth2*(ix0*ix0+iy0*iy0+iz*iz);
-        float sm=(float)(window_smooth((double)x2, gaus));
+        float sm=(float)(window_smooth((double)x2, gaus, 0));
 	long index=iz+(Ngrid/2+1)*((long)(ix+Ngrid*iy));
 
 	Cdens_local[index]*=norm;
 	Cdens_sm_local[index]=Cdens_local[index]*sm;
+        if(TaskFractalD) {
+          float smD=(float)(window_smooth((double)x2, gaus, 1));
+          Cdens_smD_local[index]=Cdens_local[index]*smD;
+        }
       }
     }
   }
@@ -704,6 +720,7 @@ void get_smoothed_density_real(void)
 {
   fftwf_plan plan_tor;
 
+  // Smoothed overdensity
 #ifdef _DEBUG
   printf("Node %d Planning\n",NodeThis);
 #endif //_DEBUG
@@ -714,6 +731,20 @@ void get_smoothed_density_real(void)
 #endif //_DEBUG
   fftwf_execute(plan_tor);
   fftwf_destroy_plan(plan_tor);
+
+  if(TaskFractalD) {
+    // Smoothed derivative
+#ifdef _DEBUG
+    printf("Node %d Planning\n",NodeThis);
+#endif //_DEBUG
+    plan_tor=fftwf_mpi_plan_dft_c2r_3d(Ngrid,Ngrid,Ngrid,Cdens_smD_local,Dens_smD_local,
+                                       MPI_COMM_WORLD,FFTW_ESTIMATE | FFTW_MPI_TRANSPOSED_IN);
+#ifdef _DEBUG
+    printf("Node %d Transforming back\n",NodeThis);
+#endif //_DEBUG
+    fftwf_execute(plan_tor);
+    fftwf_destroy_plan(plan_tor);
+  }
 }
 
 static void get_tidal_field_fd(void)

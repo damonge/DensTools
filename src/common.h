@@ -50,6 +50,10 @@ extern int TaskSmooth;
 extern float *Dens_sm_local;
 extern fftwf_complex *Cdens_sm_local;
 
+extern int TaskFractalD;
+extern float *Dens_smD_local;
+extern fftwf_complex *Cdens_smD_local;
+
 extern int TaskVel;
 extern float **Vel_local;
 

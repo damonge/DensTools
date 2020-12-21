@@ -21,6 +21,10 @@ int TaskSmooth=0;
 float *Dens_sm_local;
 fftwf_complex *Cdens_sm_local;
 
+int TaskFractalD=0;
+float *Dens_smD_local;
+fftwf_complex *Cdens_smD_local;
+
 int TaskTidal=0;
 int TaskTidalDiag=0;
 float **Tid_local;
@@ -57,6 +61,8 @@ void end_all(void)
   fftwf_free(Dens_local);
   if(TaskSmooth)
     fftwf_free(Dens_sm_local);
+  if(TaskFractalD)
+    fftwf_free(Dens_smD_local);
   if(TaskTidal) {
     for(i=0;i<6;i++)
       fftwf_free(Tid_local[i]);
@@ -112,6 +118,12 @@ void domain_decomp(void)
     if(Dens_sm_local==NULL)
       report_error(1,"Couldn't allocate density field\n");
     Cdens_sm_local=(fftwf_complex *)Dens_sm_local;
+  }
+  if(TaskFractalD) {
+    Dens_smD_local=fftwf_alloc_real(2*dsize);
+    if(Dens_smD_local==NULL)
+      report_error(1,"Couldn't allocate density field\n");
+    Cdens_smD_local=(fftwf_complex *)Dens_smD_local;
   }
   if(TaskTidal) {
     Tid_local=my_malloc(6*sizeof(float *));

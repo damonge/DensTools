@@ -35,8 +35,10 @@ int main(int argc,char **argv)
 	  TaskLinvel=1;
 	else if(d=='u')
 	  TaskNlvel=1;
+	else if(d=='d')
+	  TaskFractalD=1;
 	else
-	  fprintf(stderr,"Unknown task %c. Supported : v, t, l\n",d);
+	  fprintf(stderr,"Unknown task %c. Supported : v, t, l, u\n",d);
 	d=(*c)[++ich];
       }
     }
@@ -52,7 +54,8 @@ int main(int argc,char **argv)
 	fprintf(stderr,"  -smooth     -> smoothing length (in same units as simulation box)\n");
 	fprintf(stderr,"  -interp     -> particle interpolation scheme: NGP, CIC or TSC\n");
 	fprintf(stderr,"  -do         -> concatenate tasks: velocity (v), tidal field (t),"
-		" linearized velocity (l), non-linear velocity (u)\n");
+		" linearized velocity (l), non-linear velocity (u),"
+                " local fractal dim (d)\n");
 	fprintf(stderr,"  -diag_tidal -> diagonalize tidal tensor\n");
 	fprintf(stderr,"  -use_finite_differences -> use central FDs for derivatives\n");
 	fprintf(stderr,"  -tophat_smooth -> Use top-hat smoothing\n");
@@ -67,7 +70,7 @@ int main(int argc,char **argv)
   }
   if(!TaskTidal)
     TaskTidalDiag=0;
-  if(r_smooth>0 || TaskTidal+TaskLinvel+TaskNlvel)
+  if(r_smooth>0 || TaskTidal+TaskLinvel+TaskNlvel+TaskFractalD)
     TaskSmooth=1;
   if(strcmp(interp_method,"NGP") && strcmp(interp_method,"CIC") && strcmp(interp_method,"TSC"))
     report_error(1,"Unknown interpolation scheme %s. Use NGP, CIC or TSC\n",interp_method);
@@ -96,6 +99,8 @@ int main(int argc,char **argv)
       printf(" LV");
     if(TaskNlvel)
       printf(" NLV");
+    if(TaskFractalD)
+      printf(" FD");
     printf("\n");
     printf("   Use finite differences : %d\n",UseFD);
     printf("\n");
